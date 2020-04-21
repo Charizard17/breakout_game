@@ -3,11 +3,11 @@ var ctx = canvas.getContext("2d");
 
 var x = canvas.width / 2;
 var y = canvas.height / 2;
-var dx = Math.random() * 2;
-var dy = -Math.random() * 2;
+var dx = Math.random() * 3;
+var dy = -3;
 var ballRadius = 10;
 
-var paddleHeight = 20;
+var paddleHeight = 10;
 var paddleWidth = 150;
 var paddleX = (canvas.width - paddleWidth) / 2;
 var paddleY = canvas.height - paddleHeight;
@@ -21,6 +21,10 @@ var brickHeight = 20;
 var brickPadding = 10;
 var brickOffsetTop = 30;
 var brickOffsetLeft = 85;
+
+var score = 0;
+
+var lives = 5;
 
 var bricks = []; // The brick objects will also be used for collision detection purposes later
 for (var c = 0; c < brickColumnCount; c++) {
@@ -68,10 +72,23 @@ function drawBricks() {
   }
 }
 
+function drawScore() {
+  ctx.font = '24px Arial';
+  ctx.fillStyle = 'black';
+  ctx.fillText('Score: ' + score, 10, 20);
+}
+
+function drawLives() {
+  ctx.font = '24px Arial';
+  ctx.fillStyle = 'black';
+  ctx.fillText('Lives: ' + lives, canvas.width-90, 20)
+}
+
 
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("mousemove", mouseMoveHandler, false);
 
 function keyDownHandler(e) {
   if (e.keyCode == 39) {
@@ -87,6 +104,12 @@ function keyUpHandler(e) {
     leftPressed = false;
   }
 }
+function mouseMoveHandler(e) {
+  var relativeX = e.clientX - canvas.offsetLeft;
+  if (relativeX > 0 && relativeX < canvas.width) {
+    paddleX = relativeX - paddleWidth/2;
+  }
+}
 
 function collisionDetection() {
   for (var c = 0; c < brickColumnCount; c++) {
@@ -96,6 +119,11 @@ function collisionDetection() {
         if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
           dy = -dy;
           b.status = 0;
+          score = score + 10;
+          if (score/10 == brickRowCount*brickColumnCount) {
+            alert(`YOU WIN, Final score is ${score}. CONGRATULATIONS!`);
+            document.location.reload();
+          }
         }
       }
     }
@@ -107,6 +135,8 @@ function draw() {
   drawBricks();
   drawBall();
   drawPaddle();
+  drawScore();
+  drawLives();
   collisionDetection();
 
   x += dx;
@@ -120,9 +150,17 @@ function draw() {
     if (x > paddleX && x <= paddleX + paddleWidth) {
       dy = -dy * 1.1;
     } else {
-      alert("GAME OVER!");
-      document.location.reload();
-      clearInterval(interval); // Needed for Chrome to end game
+      lives--;
+      if (!lives) {
+        alert("GAME OVER!");
+        document.location.reload();
+      } else {
+        x = canvas.width/2;
+        y = canvas.height-30;
+        dx = Math.random() * 3;
+        dy = -3;
+        paddleX = (canvas.width - paddleWidth) / 2;
+      }
     }
   }
 
@@ -137,6 +175,7 @@ function draw() {
       paddleX = 0;
     }
   }
+  requestAnimationFrame(draw);
 }
 
-var interval = setInterval(draw, 10);
+draw();
