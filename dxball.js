@@ -10,6 +10,7 @@ var ballRadius = 10;
 var paddleHeight = 20;
 var paddleWidth = 150;
 var paddleX = (canvas.width - paddleWidth) / 2;
+var paddleY = (canvas.height - paddleHeight);
 var rightPressed = false;
 var leftPressed = false;
 
@@ -24,7 +25,7 @@ function drawBall() {
 
 function drawPaddle() {
   ctx.beginPath();
-  ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+  ctx.rect(paddleX, paddleY, paddleWidth, paddleHeight);
   ctx.fillStyle = "#0095DD";
   ctx.fill();
   ctx.closePath();
@@ -54,11 +55,19 @@ function draw() {
   drawBall();
   x += dx;
   y += dy;
-  if (y - ballRadius <= 0 || y + ballRadius >= canvas.height) {
-    dy = -dy;
-  }
   if (x - ballRadius <= 0 || x + ballRadius >= canvas.width) {
     dx = -dx;
+  }
+  if (y - ballRadius <= 0) {
+    dy = -dy;
+  } else if (y + ballRadius >= canvas.height) {
+    if (x > paddleX && x <= paddleX + paddleWidth) {
+        dy = -dy*1.1;
+    } else {
+      alert("GAME OVER!");
+      document.location.reload();
+      clearInterval(interval); // Needed for Chrome to end game
+    }
   }
 
   drawPaddle();
@@ -75,4 +84,4 @@ function draw() {
   }
 }
 
-setInterval(draw, 10);
+var interval = setInterval(draw, 10);
